@@ -25,6 +25,7 @@ import {
   type Job,
 } from '../lib/db/jobs';
 import { jobHandlers } from './handlers';
+import { validateEnvironment, validateSupabaseConfig } from '../lib/env/validate';
 
 // Configuration
 const POLL_INTERVAL_MS = Number(process.env.WORKER_POLL_INTERVAL_MS) || 2000;
@@ -46,6 +47,18 @@ let staleJobCheckInterval: NodeJS.Timeout | null = null;
  */
 async function runWorker() {
   console.log('🚀 TrueDemand worker starting (C1 Hardened)...');
+
+  // C4: Validate environment configuration before starting
+  try {
+    validateEnvironment('worker');
+    validateSupabaseConfig();
+    console.log('✅ Environment validation passed');
+  } catch (error) {
+    console.error('❌ Environment validation failed:');
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  }
+
   console.log(`🆔 Worker ID: ${WORKER_ID}`);
   console.log(`📊 Poll interval: ${POLL_INTERVAL_MS}ms`);
   console.log(`💓 Heartbeat interval: ${HEARTBEAT_INTERVAL_MS}ms`);

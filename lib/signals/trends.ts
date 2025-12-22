@@ -78,7 +78,11 @@ export async function fetchTrendsSignals(
       });
 
       const fiveYearData = parseInterestOverTime(fiveYearResults);
-      fiveYearAnalysis = analyzeTrend(fiveYearData);
+      const fiveYearTrend = analyzeTrend(fiveYearData);
+      fiveYearAnalysis = {
+        ...fiveYearTrend,
+        longTermGrowth: fiveYearTrend.growthRate,
+      };
     } catch (error) {
       console.log('5-year data not available for this keyword');
       // This is acceptable - not all keywords have 5-year data

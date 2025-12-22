@@ -50,7 +50,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       <Comp
         ref={ref as any}
         className={cn(cardVariants({ variant, padding, className }))}
-        {...props}
+        {...(props as any)}
       />
     );
   }

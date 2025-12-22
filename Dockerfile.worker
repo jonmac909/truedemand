@@ -1,0 +1,59 @@
+# ============================================================================
+# TrueDemand Background Worker Dockerfile
+# ============================================================================
+# Production-ready container for the async job worker process
+#
+# Build: docker build -f Dockerfile.worker -t truedemand-worker .
+# Run:   docker run --env-file .env truedemand-worker
+#
+# Environment variables (see .env.example for full list):
+# - NEXT_PUBLIC_SUPABASE_URL (required)
+# - NEXT_PUBLIC_SUPABASE_ANON_KEY (required)
+# - SUPABASE_SERVICE_ROLE_KEY (required)
+# - ANTHROPIC_API_KEY (required)
+# - APIFY_API_KEY (required)
+# - WORKER_* configuration (optional, has defaults)
+
+# ============================================================================
+# Stage 1: Dependencies
+# ============================================================================
+FROM node:20-alpine AS deps
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json* ./
+
+# Install dependencies (production + devDependencies for tsx)
+RUN npm ci
+
+# ============================================================================
+# Stage 2: Production Image
+# ============================================================================
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 worker
+
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copy application code
+COPY --chown=worker:nodejs . .
+
+# Switch to non-root user
+USER worker
+
+# Worker uses tsx to run TypeScript directly (no build step needed)
+CMD ["npx", "tsx", "worker/index.ts"]
+
+# Graceful shutdown: worker handles SIGTERM/SIGINT
+STOPSIGNAL SIGTERM
+
+# Labels for container metadata
+LABEL maintainer="TrueDemand"
+LABEL description="Background job worker for TrueDemand market validation platform"
+LABEL version="1.0.0"

@@ -1,0 +1,55 @@
+# ============================================================================
+# Docker Build Context Exclusions
+# ============================================================================
+# Exclude unnecessary files from Docker build context to:
+# - Speed up build times
+# - Reduce image size
+# - Prevent leaking sensitive data
+
+# Dependencies (installed via npm ci)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Next.js build output (not needed for worker)
+.next/
+out/
+
+# Test artifacts
+playwright-report/
+test-results/
+coverage/
+
+# Environment files (passed via --env-file or env vars)
+.env
+.env.local
+.env*.local
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation (not needed at runtime)
+docs/
+prompts/
+*.md
+!README.md
+
+# CI/CD
+.github/
+
+# Misc
+*.log
+.npmrc

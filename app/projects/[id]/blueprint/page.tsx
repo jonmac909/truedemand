@@ -43,7 +43,7 @@ export default function BlueprintPage({ params }: { params: { id: string } }) {
           </p>
           <div className="flex items-center gap-3">
             <Link href={`/projects/${params.id}/validation`}>
-              <Button variant="outline">
+              <Button variant="secondary">
                 Back to Validation
               </Button>
             </Link>
