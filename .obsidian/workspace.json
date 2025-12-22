@@ -185,18 +185,19 @@
   },
   "active": "dc026e65f61d4ea0",
   "lastOpenFiles": [
+    "docs/B4_PROMPT_PACK_SYSTEM.md",
+    "lib/prompts/index.ts",
+    "supabase/seeds/prompt_templates.sql",
+    "supabase/seeds",
+    "lib/prompts/execute.ts",
+    "lib/prompts/template-engine.ts",
+    "lib/prompts/types.ts",
+    "lib/prompts",
+    "supabase/migrations/20231222000001_prompt_pack_system.sql",
     "docs/B3_VALIDATION_DASHBOARD.md",
     "components/validation/index.ts",
     "app/validation/[id]/page.tsx",
-    "app/validation/[id]",
-    "components/validation/source-card.tsx",
-    "components/validation/tabs.tsx",
-    "components/validation/collapsible-section.tsx",
-    "components/validation/score-factor.tsx",
-    "components/validation/opportunity-score.tsx",
-    "components/validation",
     "docs/B2_SCORING_SYSTEM.md",
-    "scripts/test-scoring.ts",
     "node_modules/@babel/runtime/README.md",
     "node_modules/@anthropic-ai/sdk/src/_vendor/partial-json-parser/README.md",
     "node_modules/@anthropic-ai/sdk/src/internal/README.md",
@@ -219,7 +220,6 @@
     "node_modules/get-proto/README.md",
     "node_modules/get-proto/CHANGELOG.md",
     "node_modules/es-object-atoms/README.md",
-    "node_modules/es-object-atoms/CHANGELOG.md",
-    "node_modules/call-bind-apply-helpers/README.md"
+    "node_modules/es-object-atoms/CHANGELOG.md"
   ]
 }
