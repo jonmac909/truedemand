@@ -30,6 +30,21 @@ Success = user exports a cited, evidence-based product blueprint.
 - **LLM Integration**: Structured JSON outputs only
 - **State Management**: React Query for async operations
 
+### 4. Design System (LOCKED - Production-Ready)
+**CRITICAL**: All UI components MUST use the locked design system.
+
+- **Primary Color**: `#2563EB` (trustworthy blue, NOT purple)
+- **Shared Components**: Located in `components/ui/` (Button, Card, Stepper, Input, Badge)
+- **Complete Spec**: See `DESIGN_SYSTEM.md` for exact pixel values, spacing, and typography
+- **Component Guide**: See `COMPONENT_GUIDE.md` for code examples and patterns
+- **Design Tokens**: Import from `lib/design-tokens.ts`
+
+**Rules:**
+- NEVER create inline button/card styles — use `<Button>`, `<Card>`, etc.
+- NEVER hardcode colors — use design tokens or Tailwind classes from the approved palette
+- NEVER create animations >200ms — keep interactions fast and subtle
+- ALL new UI must match the onboarding flow's visual style exactly
+
 ## User Flow Architecture
 
 The app is a **stateless, single-session experience** (v1):
@@ -55,27 +70,56 @@ Each step triggers a background job. UI shows loading states, never blocks.
 ## Common Commands
 
 ```bash
-# Start Next.js development server
+# Start Next.js development server (runs on port 3000)
 npm run dev
 
 # Start background job worker (run in separate terminal)
 npm run worker
+
+# Run worker once (for testing, no watch mode)
+npm run worker:once
 
 # Install dependencies
 npm install
 
 # TypeScript type checking
 npx tsc --noEmit
+
+# Build for production
+npm run build
+
+# Run production server
+npm start
+
+# Lint code
+npm run lint
 ```
+
+## Environment Setup
+
+Required environment variables in `.env`:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=       # Your Supabase project URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY=  # Supabase anonymous key
+SUPABASE_SERVICE_ROLE_KEY=      # Supabase service role key (for worker)
+```
+
+Copy `.env.example` to `.env` and fill in your credentials.
 
 ## Database Setup
 
 The project uses Supabase (PostgreSQL) with migrations in `supabase/migrations/`:
 
 ```bash
-# Migrations are applied manually to Supabase project
-# See supabase/migrations/ for schema
-# See supabase/seed.sql for demo data
+# Apply migrations using Supabase CLI
+supabase db push
+
+# Or manually run SQL files in Supabase SQL editor
+# Files are in supabase/migrations/
+
+# Load seed data (optional, for testing)
+# Run supabase/seed.sql in SQL editor
 ```
 
 **Database Schema Overview:**
@@ -93,8 +137,14 @@ All tables have RLS enabled. Foreign keys enforce referential integrity.
 
 ### Frontend Structure
 - **App Router Layout**: Persistent sidebar navigation (`components/app-sidebar.tsx`) with content area
+- **Onboarding Flow**: 4-step flow using ONLY shared components from `components/ui/`
+  - Step 1: Market Selection (selectable cards)
+  - Step 2: Data Scanning (loading state)
+  - Step 3: Insights Review (code output + copy)
+  - Step 4: Launch Strategy (feature cards)
 - **Page Components**: Located in `app/` directory
   - `/` — Project Library (card grid with search)
+  - `/onboarding/step-1` through `/onboarding/step-4` — Onboarding flow
   - `/explorer` — Market Tree Explorer (split view: tree + detail panel)
   - `/new` — New Project form (centered card)
   - `/validation` — Validation page (stub)
@@ -113,19 +163,31 @@ All tables have RLS enabled. Foreign keys enforce referential integrity.
 - **Database Functions**: `lib/db/jobs.ts` provides type-safe job CRUD operations
 - **Restart Safety**: Worker uses atomic updates to prevent race conditions
 
-### Design System
+### Design System Implementation
 
-**Theme**: Professional SaaS (light)
-- **Background**: `#ffffff`
-- **Primary Accent**: `#3b82f6` (blue)
-- **Border Radius**: `0.375rem` (6px)
-- **Shadows**: Minimal — `0 1px 2px rgba(0, 0, 0, 0.05)`
-- **Fonts**:
-  - UI: Inter
-  - Marketing: Source Serif 4 (not used in current UI)
-  - Code/IDs: Geist Mono
+**Shared Components** (in `components/ui/`):
+- `Button` - 4 variants (primary, secondary, ghost, link), 3 sizes, loading state
+- `Card` - 4 variants (default, selectable, selected, feature), 4 padding options
+- `Stepper` - Horizontal progress indicator with emoji states
+- `Input` - Styled text input matching approved design
+- `Badge` - 6 semantic variants (primary, secondary, success, warning, error, outline)
 
-Design tokens are defined in `app/globals.css` using CSS variables.
+**Usage Pattern:**
+```tsx
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+
+// ✓ GOOD
+<Card variant="selectable" padding="default">
+  <h3>Card Title</h3>
+  <Button>Action</Button>
+</Card>
+
+// ✗ BAD - Never do this
+<div className="bg-white p-6 rounded-lg border">
+  <button className="bg-blue-500 px-4 py-2">Action</button>
+</div>
+```
 
 ### Integration Points (TODO)
 
@@ -149,6 +211,7 @@ Follow the prompt-driven development flow:
 - ✅ A2: Database schema and seed data
 - ✅ A3: Async job system and worker
 - ✅ A4: UI scaffold with routes and navigation
+- ✅ Design System: Locked blue theme with shared components
 
 ## Key Files & Directories
 
@@ -157,12 +220,16 @@ Follow the prompt-driven development flow:
 - `/supabase/migrations/` — Database schema migrations
 - `/worker/` — Background job worker and handlers
 - `/lib/db/` — Database utility functions
-- `/components/` — Reusable React components (shadcn/ui + custom)
+- `/lib/design-tokens.ts` — Centralized design system tokens
+- `/components/ui/` — Shared, reusable components (LOCKED design system)
+- `/components/` — App-specific components (sidebar, navigation, job polling)
 - `/app/` — Next.js App Router pages and API routes
-- `.auto-claude/` — Auto Claude workspace (excluded from git)
+- `DESIGN_SYSTEM.md` — Complete visual language specification (LOCKED)
+- `COMPONENT_GUIDE.md` — Developer quick reference for components
 
 ## Decision-Making Philosophy
 
 - **Incremental delivery over completeness** — ship working features iteratively
 - **Make reasonable defaults** — only ask clarifying questions if blocking
 - **Document assumptions** — note any defaults or decisions made
+- **Design system compliance** — ALL UI must use shared components from `components/ui/`

@@ -63,9 +63,33 @@ export default function Step1Page() {
   const [customMarket, setCustomMarket] = useState('');
   const router = useRouter();
 
-  const handleContinue = () => {
-    if (selectedMarket || customMarket.trim()) {
-      router.push('/onboarding/step-2');
+  const handleContinue = async () => {
+    if (!selectedMarket && !customMarket.trim()) return;
+
+    const marketInput = customMarket.trim() || selectedMarket;
+    if (!marketInput) return;
+
+    try {
+      // Create project and market node
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ market_input: marketInput }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create project');
+      }
+
+      const data = await response.json();
+
+      // Store project data in URL params for next step
+      router.push(
+        `/onboarding/step-2?project_id=${data.project_id}&market_node_id=${data.market_node_id}&market_input=${encodeURIComponent(data.market_input)}`
+      );
+    } catch (error) {
+      console.error('Failed to create project:', error);
+      alert('Failed to create project. Please try again.');
     }
   };
 
