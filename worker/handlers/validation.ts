@@ -5,6 +5,7 @@ import { fetchRedditSignals, extractPainIndicators } from '../../lib/signals/red
 import { fetchTrendsSignals } from '../../lib/signals/trends';
 import { fetchTikTokSignals } from '../../lib/signals/tiktok';
 import { analyzePainPoints, analyzeAudienceClarity } from '../../lib/signals/llm';
+import { scoreValidationInitial } from '../../lib/scoring';
 
 /**
  * Validation job handler with REAL data sources
@@ -240,11 +241,30 @@ export async function handleValidation(job: Job): Promise<Record<string, any>> {
     audienceAnalysis,
   });
 
+  // Step 9: Compute B2 Explainable Score
+  await updateJobProgress(job.id, 97, 'Computing explainable opportunity score (B2)...');
+
+  let scoringResult;
+  try {
+    scoringResult = await scoreValidationInitial(validation.id);
+    await updateJobProgress(
+      job.id,
+      99,
+      `Final score: ${scoringResult.overallScore}/100 (${scoringResult.confidence} confidence)`
+    );
+  } catch (error: any) {
+    // If B2 scoring fails, log error but don't fail the entire validation
+    console.error('B2 scoring failed:', error);
+    await updateJobProgress(job.id, 99, `B2 scoring failed: ${error.message} - using B1 scores`);
+    scoringResult = null;
+  }
+
   await updateJobProgress(job.id, 100, 'Real validation analysis complete');
 
   return {
     validation_id: validation.id,
-    overall_score: overallScore,
+    overall_score: scoringResult?.overallScore ?? overallScore,
+    confidence: scoringResult?.confidence ?? 'medium',
     signals: {
       trend: scores.trend,
       pain: scores.pain,
@@ -257,6 +277,13 @@ export async function handleValidation(job: Job): Promise<Record<string, any>> {
       trends: !!trendsSignal,
       tiktok: !!tiktokSignal,
     },
+    scoring: scoringResult
+      ? {
+          breakdown: scoringResult.breakdown,
+          dataQuality: scoringResult.dataQuality,
+          weightsUsed: scoringResult.weightsUsed,
+        }
+      : null,
   };
 }
 
