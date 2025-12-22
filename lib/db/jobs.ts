@@ -1,4 +1,5 @@
 import { supabase } from '../supabase/client';
+import { assertDefined, assertNonEmptyString } from '../qa/assertions';
 
 export type JobType =
   | 'sub_niche_discovery'
@@ -249,6 +250,11 @@ export async function markJobAsFailed(
  * Create a new job in pending state.
  */
 export async function createJob(params: CreateJobParams): Promise<Job> {
+  // C3 QA: Validate required fields
+  assertNonEmptyString(params.project_id, 'project_id', 'createJob');
+  assertNonEmptyString(params.job_type, 'job_type', 'createJob');
+  assertDefined(params.input_data, 'input_data', 'createJob');
+
   const timestamp = new Date().toISOString();
   const initialLog = `[${timestamp}] Job created and queued`;
 

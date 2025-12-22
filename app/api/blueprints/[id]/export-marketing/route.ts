@@ -7,6 +7,7 @@ import {
   type MarketingPlanExportData,
   type ExportMetadata,
 } from '@/lib/exports';
+import { assertDefined, assertNonEmptyString } from '@/lib/qa/assertions';
 
 /**
  * GET /api/blueprints/[id]/export-marketing
@@ -70,6 +71,13 @@ export async function GET(
     const idea = blueprint.ideas as any;
     const validation = idea.validations as any;
     const marketNode = validation.market_nodes as any;
+
+    // C3 QA: Validate required data is present
+    assertDefined(idea, 'idea', 'Marketing plan export');
+    assertDefined(validation, 'validation', 'Marketing plan export');
+    assertDefined(marketNode, 'marketNode', 'Marketing plan export');
+    assertNonEmptyString(idea.title, 'idea.title', 'Marketing plan export');
+    assertNonEmptyString(blueprint.gtm_recommendations, 'gtm_recommendations', 'Marketing plan export');
 
     // Prepare marketing plan export data (derived from blueprint)
     const exportData: MarketingPlanExportData = {

@@ -8,7 +8,12 @@
     "start": "next start",
     "lint": "next lint",
     "worker": "tsx watch worker/index.ts",
-    "worker:once": "tsx worker/index.ts"
+    "worker:once": "tsx worker/index.ts",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:jobs": "playwright test tests/jobs",
+    "test:exports": "playwright test tests/exports",
+    "test:report": "playwright show-report"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",

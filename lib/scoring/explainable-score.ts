@@ -12,6 +12,7 @@ import {
   INSUFFICIENT_DATA_SCORE,
   mergeWeights,
 } from './config';
+import { assertDefined, assertValidScore } from '../qa/assertions';
 
 /**
  * B2 Explainable Scoring System
@@ -58,6 +59,9 @@ export function computeExplainableScore(
     breakdown.competition * weights.competition +
     breakdown.monetization * weights.monetization
   );
+
+  // C3 QA: Validate final score is in valid range
+  assertValidScore(overallScore, 'overallScore', 'computeExplainableScore');
 
   // Assess data quality
   const dataQuality = assessDataQuality(factorExplanations, breakdown);

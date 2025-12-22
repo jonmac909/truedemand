@@ -7,6 +7,7 @@ import {
   type BlueprintExportData,
   type ExportMetadata,
 } from '@/lib/exports';
+import { assertDefined, assertNonEmptyString } from '@/lib/qa/assertions';
 
 /**
  * GET /api/blueprints/[id]/export
@@ -77,6 +78,13 @@ export async function GET(
     const idea = blueprint.ideas as any;
     const validation = idea.validations as any;
     const marketNode = validation.market_nodes as any;
+
+    // C3 QA: Validate required data is present
+    assertDefined(idea, 'idea', 'Blueprint export');
+    assertDefined(validation, 'validation', 'Blueprint export');
+    assertDefined(marketNode, 'marketNode', 'Blueprint export');
+    assertNonEmptyString(idea.title, 'idea.title', 'Blueprint export');
+    assertNonEmptyString(blueprint.executive_summary, 'executive_summary', 'Blueprint export');
 
     // Fetch validation sources for citations
     const { data: sources } = await supabase

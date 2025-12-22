@@ -1,0 +1,289 @@
+import { test, expect } from '@playwright/test';
+import {
+  blueprintToMarkdown,
+  marketingPlanToMarkdown,
+  EXPORT_VERSION,
+  APP_VERSION,
+  type BlueprintExportData,
+  type MarketingPlanExportData,
+  type ExportMetadata,
+} from '../../lib/exports';
+
+/**
+ * C3 QA - Export Verification Tests
+ *
+ * Verifies:
+ * - Blueprint Markdown exports correctly
+ * - Marketing Plan Markdown exports correctly
+ * - Metadata (timestamp, version, export type) is included
+ * - Export content matches input data (no hallucination)
+ */
+
+test.describe('Export Verification', () => {
+  const mockBlueprintData: BlueprintExportData = {
+    blueprint_id: 'test-blueprint-123',
+    project_id: 'test-project-123',
+    idea_id: 'test-idea-123',
+    idea: {
+      title: 'Test Product Idea',
+      target_persona: 'Test target persona description',
+      value_proposition: 'Test value proposition statement',
+      differentiators: ['Differentiator 1', 'Differentiator 2', 'Differentiator 3'],
+    },
+    validation: {
+      overall_score: 78,
+      overall_explanation: 'Strong validation signals across multiple dimensions.',
+      search_score: 75,
+      social_score: 82,
+      competition_score: 70,
+      financial_score: 85,
+    },
+    market_node: {
+      name: 'Test Market',
+      description: 'Test market description',
+    },
+    executive_summary: '## Executive Summary\n\nTest executive summary content.',
+    target_market_analysis: '## Target Market Analysis\n\nTest target market content.',
+    feature_roadmap: {
+      mvp: {
+        timeline: '4-6 weeks',
+        features: ['Feature 1', 'Feature 2', 'Feature 3'],
+      },
+      phase_2: {
+        timeline: '2-3 months',
+        features: ['Advanced Feature 1', 'Advanced Feature 2'],
+      },
+      phase_3: {
+        timeline: '4-6 months',
+        features: ['Enterprise Feature 1', 'Enterprise Feature 2'],
+      },
+    },
+    positioning_strategy: '## Positioning Strategy\n\nTest positioning content.',
+    gtm_recommendations: '## Go-to-Market Recommendations\n\nTest GTM content.',
+    risk_assessment: '## Risk Assessment\n\nTest risk assessment content.',
+    sources: [
+      {
+        source_type: 'search',
+        citation: 'Google Trends: "test market" (12-month analysis)',
+        evidence: '12-month trend: rising (15% growth)',
+      },
+      {
+        source_type: 'social',
+        citation: 'Reddit search: "test market" (50 posts)',
+        evidence: 'Found 50 relevant discussions across 5 subreddits',
+      },
+    ],
+    created_at: '2025-12-22T10:00:00Z',
+  };
+
+  const mockMarketingPlanData: MarketingPlanExportData = {
+    blueprint_id: 'test-blueprint-123',
+    project_id: 'test-project-123',
+    product_title: 'Test Product Idea',
+    target_persona: 'Test target persona',
+    value_proposition: 'Test value proposition',
+    market_name: 'Test Market',
+    validation_score: 78,
+    gtm_recommendations: '## Go-to-Market\n\nTest GTM recommendations.',
+    positioning_strategy: '## Positioning\n\nTest positioning strategy.',
+    target_market_analysis: '## Target Market\n\nTest target market analysis.',
+    created_at: '2025-12-22T10:00:00Z',
+  };
+
+  const mockMetadata: ExportMetadata = {
+    generated_at: '2025-12-22T14:30:00Z',
+    app_version: APP_VERSION,
+    export_version: EXPORT_VERSION,
+    export_type: 'blueprint',
+  };
+
+  test('blueprint export includes all required sections', () => {
+    const markdown = blueprintToMarkdown(mockBlueprintData, mockMetadata);
+
+    // Header
+    expect(markdown).toContain('# Test Product Idea — Implementation Blueprint');
+    expect(markdown).toContain('**Market**: Test Market');
+    expect(markdown).toContain('**Validation Score**: 78/100');
+
+    // Executive Summary
+    expect(markdown).toContain('## Executive Summary');
+    expect(markdown).toContain('Test executive summary content');
+
+    // Validation
+    expect(markdown).toContain('## Market Validation Summary');
+    expect(markdown).toContain('**Overall Score**: 78/100');
+
+    // Target Market
+    expect(markdown).toContain('## Target Market Analysis');
+
+    // Feature Roadmap
+    expect(markdown).toContain('## Feature Roadmap');
+    expect(markdown).toContain('### MVP');
+    expect(markdown).toContain('Feature 1');
+
+    // Positioning
+    expect(markdown).toContain('## Positioning Strategy');
+
+    // GTM
+    expect(markdown).toContain('## Go-to-Market Recommendations');
+
+    // Risk Assessment
+    expect(markdown).toContain('## Risk Assessment');
+
+    // Sources
+    expect(markdown).toContain('## Data Sources & Citations');
+    expect(markdown).toContain('Google Trends');
+    expect(markdown).toContain('Reddit search');
+  });
+
+  test('blueprint export includes metadata footer', () => {
+    const markdown = blueprintToMarkdown(mockBlueprintData, mockMetadata);
+
+    expect(markdown).toContain('## About This Document');
+    expect(markdown).toContain('Export Version: 1.0.0');
+    expect(markdown).toContain('App Version: 1.0.0');
+    expect(markdown).toContain('Generated by [TrueDemand]');
+  });
+
+  test('blueprint export does not hallucinate data', () => {
+    const markdown = blueprintToMarkdown(mockBlueprintData, mockMetadata);
+
+    // Verify all input data appears in output
+    expect(markdown).toContain('Test Product Idea');
+    expect(markdown).toContain('Test target persona description');
+    expect(markdown).toContain('Test value proposition statement');
+    expect(markdown).toContain('Differentiator 1');
+    expect(markdown).toContain('Test executive summary content');
+    expect(markdown).toContain('Test GTM content');
+
+    // Verify scores match exactly
+    expect(markdown).toContain('78/100');
+    expect(markdown).toContain('75/100'); // search_score
+    expect(markdown).toContain('82/100'); // social_score
+    expect(markdown).toContain('70/100'); // competition_score
+    expect(markdown).toContain('85/100'); // financial_score
+  });
+
+  test('marketing plan export includes required sections', () => {
+    const marketingMetadata: ExportMetadata = {
+      ...mockMetadata,
+      export_type: 'marketing_plan',
+    };
+
+    const markdown = marketingPlanToMarkdown(mockMarketingPlanData, marketingMetadata);
+
+    // Header
+    expect(markdown).toContain('# Marketing Plan: Test Product Idea');
+    expect(markdown).toContain('**Market**: Test Market');
+    expect(markdown).toContain('**Validation Score**: 78/100');
+
+    // Product Overview
+    expect(markdown).toContain('## Product Overview');
+    expect(markdown).toContain('Test value proposition');
+
+    // Market Context
+    expect(markdown).toContain('## Market Context');
+
+    // Positioning
+    expect(markdown).toContain('## Positioning');
+
+    // GTM
+    expect(markdown).toContain('## Go-to-Market');
+
+    // Target Audience
+    expect(markdown).toContain('## Target Audience Summary');
+  });
+
+  test('marketing plan export indicates it is derived', () => {
+    const marketingMetadata: ExportMetadata = {
+      ...mockMetadata,
+      export_type: 'marketing_plan',
+    };
+
+    const markdown = marketingPlanToMarkdown(mockMarketingPlanData, marketingMetadata);
+
+    expect(markdown).toContain('Export Type: Marketing Plan (derived from Implementation Blueprint)');
+    expect(markdown).toContain('refer to the full blueprint export');
+  });
+
+  test('marketing plan export does not hallucinate data', () => {
+    const marketingMetadata: ExportMetadata = {
+      ...mockMetadata,
+      export_type: 'marketing_plan',
+    };
+
+    const markdown = marketingPlanToMarkdown(mockMarketingPlanData, marketingMetadata);
+
+    // Verify all input data appears in output
+    expect(markdown).toContain('Test Product Idea');
+    expect(markdown).toContain('Test target persona');
+    expect(markdown).toContain('Test value proposition');
+    expect(markdown).toContain('Test Market');
+    expect(markdown).toContain('78/100');
+  });
+
+  test('export handles empty sources gracefully', () => {
+    const dataWithNoSources: BlueprintExportData = {
+      ...mockBlueprintData,
+      sources: [],
+    };
+
+    const markdown = blueprintToMarkdown(dataWithNoSources, mockMetadata);
+
+    expect(markdown).toContain('## Data Sources');
+    expect(markdown).toContain('No validation sources available');
+  });
+
+  test('export handles empty roadmap gracefully', () => {
+    const dataWithEmptyRoadmap: BlueprintExportData = {
+      ...mockBlueprintData,
+      feature_roadmap: {},
+    };
+
+    const markdown = blueprintToMarkdown(dataWithEmptyRoadmap, mockMetadata);
+
+    expect(markdown).toContain('## Feature Roadmap');
+    // Should not crash, even with empty roadmap
+  });
+
+  test('export sanitizes special characters in Markdown', () => {
+    const dataWithSpecialChars: BlueprintExportData = {
+      ...mockBlueprintData,
+      idea: {
+        ...mockBlueprintData.idea,
+        title: 'Product with "Quotes" & Symbols',
+      },
+    };
+
+    const markdown = blueprintToMarkdown(dataWithSpecialChars, mockMetadata);
+
+    // Should contain the title without breaking Markdown
+    expect(markdown).toContain('Product with "Quotes" & Symbols');
+  });
+
+  test('export version constants are defined', () => {
+    expect(EXPORT_VERSION).toBeDefined();
+    expect(EXPORT_VERSION).toMatch(/^\d+\.\d+\.\d+$/); // Semver format
+    expect(APP_VERSION).toBeDefined();
+    expect(APP_VERSION).toMatch(/^\d+\.\d+\.\d+$/); // Semver format
+  });
+
+  test('blueprint export includes score breakdown table', () => {
+    const markdown = blueprintToMarkdown(mockBlueprintData, mockMetadata);
+
+    // Verify table format
+    expect(markdown).toContain('| Signal | Score | Description |');
+    expect(markdown).toContain('| Search Trends | 75/100 |');
+    expect(markdown).toContain('| Social Proof | 82/100 |');
+    expect(markdown).toContain('| Competition | 70/100 |');
+    expect(markdown).toContain('| Financial | 85/100 |');
+  });
+
+  test('export preserves timestamps correctly', () => {
+    const markdown = blueprintToMarkdown(mockBlueprintData, mockMetadata);
+
+    // Verify timestamps are included (formatted, not raw ISO)
+    expect(markdown).toContain('December');
+    expect(markdown).toContain('2025');
+  });
+});
