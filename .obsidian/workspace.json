@@ -185,6 +185,10 @@
   },
   "active": "dc026e65f61d4ea0",
   "lastOpenFiles": [
+    "docs/DEPLOYMENT.md",
+    "Dockerfile.worker",
+    "lib/env/validate.ts",
+    "lib/env",
     "tests/README.md",
     "docs/C3_QA_SYSTEM.md",
     "lib/qa/assertions.ts",
@@ -195,10 +199,7 @@
     "tests/jobs",
     "tests/exports",
     "tests/e2e",
-    "tests",
-    "playwright.config.ts",
     "docs/C2_EXPORT_SYSTEM.md",
-    "components/blueprint/index.ts",
     "docs/C1_JOB_SYSTEM_HARDENING.md",
     "docs/B4_PROMPT_PACK_SYSTEM.md",
     "docs/B3_VALIDATION_DASHBOARD.md",
@@ -219,7 +220,6 @@
     "node_modules/gopd/README.md",
     "node_modules/gopd/CHANGELOG.md",
     "node_modules/has-symbols/README.md",
-    "node_modules/has-symbols/CHANGELOG.md",
-    "node_modules/es-define-property/README.md"
+    "node_modules/has-symbols/CHANGELOG.md"
   ]
 }
